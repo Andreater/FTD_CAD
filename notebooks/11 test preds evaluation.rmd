@@ -1,0 +1,103 @@
+---
+title: "evaluate val preds"
+output: html_document
+---
+
+
+```{r}
+library(caret)
+library(tidyverse)
+library(readxl)
+```
+
+# Import
+
+```{r include=FALSE}
+#set path
+input_path = "C:/Users/LAB401/Analyses/NIFD_exp/data/intermediate/MONAI predictions/"
+
+# import metadata for ids
+# THIS COULD BE METADATA FULL
+metadata_full = openxlsx::read.xlsx("C:/Users/LAB401/Analyses/NIFD_exp/data/intermediate/metadata_full.xlsx")
+
+# import sheets with val preds
+df = read.csv(paste0(input_path, "test_preds.csv"))
+
+```
+
+# get pred and truth
+
+```{r}
+temp0 =
+left_join(
+  df %>% 
+    dplyr::select(-X) %>% 
+    mutate(caps_id = word(fullpath, 10, sep = "\\\\")) %>% 
+    dplyr::select(caps_id, pred, prob, fullpath),
+  
+  metadata_full %>% 
+    dplyr::select(caps_id, new_group),
+  by = "caps_id"
+) %>% 
+  mutate(truth = ifelse(new_group == "case", 1, 0)) %>% 
+  relocate(fullpath, .after = last_col())
+```
+
+
+# confusion matrix
+
+```{r}
+confusionMatrix(as.factor(temp0$pred),
+                as.factor(temp0$truth),
+                positive = "1",
+                mode = "everything")
+```
+
+```{r}
+temp1 = 
+temp0 %>% 
+  mutate(true_prob = ifelse(pred == 1, prob, 1 - prob),
+         truth = as.factor(truth)) %>% 
+  relocate(true_prob, .after = prob)
+
+temp1 %>% 
+  ggplot() +
+  aes(x = truth,
+      y = true_prob) +
+  geom_boxplot()
+```
+
+ROC
+
+```{r}
+library(pROC)
+
+pROC::roc(temp1$pred %>% as.numeric(),
+          temp1$truth %>% as.character() %>% as.numeric())
+```
+
+
+Ricalibrare il modello peggiora la performance
+
+```{r}
+train(truth ~ true_prob,
+      data = temp1,
+      method = "glm",
+      family = "binomial")
+```
+
+```{python}
+import pandas as pd
+
+df = pd.DataFrame({"ctrl": [12, 8],
+                   "case": [0, 20]})
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+#plt.figure(figsize = (10,20))
+sns.heatmap(df, annot=True, xticklabels = ["ctrl", "case"], yticklabels = ["ctrl", "case"], cmap = "Blues", cbar = False, square = True)
+plt.show()
+plt.savefig('C:/Users/LAB401/Analyses/NIFD_exp/data/results/cm.png', dpi = 300, bbox_inches = "tight")
+```
+

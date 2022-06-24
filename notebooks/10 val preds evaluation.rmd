@@ -1,0 +1,54 @@
+---
+title: "evaluate val preds"
+output: html_document
+---
+
+
+```{r}
+library(caret)
+library(tidyverse)
+library(readxl)
+```
+
+# Import
+
+```{r include=FALSE}
+#set path
+input_path = "C:/Users/LAB401/Analyses/NIFD_exp/data/intermediate/MONAI predictions/"
+
+# import metadata for ids
+# THIS COULD BE METADATA FULL
+metadata_full = openxlsx::read.xlsx("C:/Users/LAB401/Analyses/NIFD_exp/data/intermediate/metadata_full.xlsx")
+
+# import sheets with val preds
+df = read.csv(paste0(input_path, "val_preds.csv"))
+
+```
+
+# get pred and truth
+
+```{r}
+temp0 =
+left_join(
+  df %>% 
+    dplyr::select(-X) %>% 
+    mutate(caps_id = word(fullpath, 10, sep = "\\\\")) %>% 
+    dplyr::select(caps_id, pred, prob, fullpath),
+  
+  metadata_full %>% 
+    dplyr::select(caps_id, new_group),
+  by = "caps_id"
+) %>% 
+  mutate(truth = ifelse(new_group == "case", 1, 0)) %>% 
+  relocate(fullpath, .after = last_col())
+```
+
+
+# confusion matrix
+
+```{r}
+confusionMatrix(as.factor(temp0$pred),
+                as.factor(temp0$truth),
+                positive = "1",
+                mode = "everything")
+```

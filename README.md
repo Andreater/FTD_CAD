@@ -3,11 +3,14 @@
 Figure 1. Graphical representation of the main steps of the workflow.
 
 ## ToC
-1. Abstract
+1. [Repository description](#repository-description)
 2. [Background](#background)
 3. [Results](#results)
 4. [About the data](#about-the-data)
 5. [Scientific paper](#scientific-paper)
+
+## Repository description
+This repository contains the code base for the paper "A Reproducible Deep-Learning-Based Computer-Aided Diagnosis Tool for Frontotemporal Dementia Using MONAI and Clinica Frameworks" published in [Life](https://www.mdpi.com/journal/life) is an international, peer-reviewed, open access journal of scientific studies related to fundamental themes in life sciences, from basic to applied research, published monthly online by MDPI. 
 
 ## Background
 Despite Artificial Intelligence (AI) being a leading technology in biomedical research, real-life implementation of AI-based Computer-Aided Diagnosis (CAD) tools into the clinical setting is still remote due to unstandardized practices during development. Few or no attempts have been made to propose a reproducible CAD development workflow for 3D MRI data. In this paper, we present the development of an easily reproducible and reliable CAD tool using the [Clinica](https://github.com/aramis-lab/clinica) and [MONAI](https://monai.io/) frameworks that were developed to introduce standardized practices in medical imaging. A Deep Learning (DL) algorithm was trained to detect frontotemporal dementia (FTD) on data from the NIFD database to ensure reproducibility (fig.2).
